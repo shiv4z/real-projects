@@ -123,8 +123,6 @@
 		<div>
 		<a href="/downloadExcel" class="btn btn-danger button-spacing">EXCEL</a>
 		<a href="/downloadPdf" class="btn  btn-danger">PDF</a>
-		<a href="/exportExcel" class="btn btn-info button-spacing">EXCEL</a>
-		<a href="/exportPdf" class="btn  btn-info">PDF</a>
 		
 		</div>
 
