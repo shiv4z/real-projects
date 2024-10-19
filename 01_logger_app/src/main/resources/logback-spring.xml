@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!-- Appender for ServiceImpl Logs -->
+    <appender name="ServiceImplAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>D:/logs/service-impl.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>D:/logs/service-impl-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Appender for Controller Logs -->
+    <appender name="ControllerAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>D:/logs/controller.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>D:/logs/controller-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Root Logger (Other logs) -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
+    <!-- Logger for ServiceImpl -->
+    <logger name="shiv.com.impl.MessageServiceImpl" level="INFO" additivity="false">
+        <appender-ref ref="ServiceImplAppender"/>
+    </logger>
+
+    <!-- Logger for Controller -->
+    <logger name="shiv.com.rest.MessageRestController" level="INFO" additivity="false">
+        <appender-ref ref="ControllerAppender"/>
+    </logger>
+
+</configuration>

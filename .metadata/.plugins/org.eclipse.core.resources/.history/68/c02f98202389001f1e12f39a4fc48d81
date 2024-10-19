@@ -1,0 +1,193 @@
+package shiv.com.serviceImpl;
+
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
+import org.springframework.stereotype.Service;
+
+import com.lowagie.text.Document;
+import com.lowagie.text.PageSize;
+import com.lowagie.text.Paragraph;
+import com.lowagie.text.pdf.PdfPTable;
+import com.lowagie.text.pdf.PdfWriter;
+
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletResponse;
+import shiv.com.entity.CitizenPlan;
+import shiv.com.model.SearchRequest;
+import shiv.com.repo.CitizenPlanRepo;
+import shiv.com.service.ReportService;
+
+@Service
+public class ReportServiceImpl implements ReportService{
+
+	@Autowired
+	private CitizenPlanRepo reportRepo;
+	
+	
+	@Override
+	public List<String> fetchPlanName() {
+		return reportRepo.fetchPlanName();
+	}
+
+	@Override
+	public List<String> fetchPlanStatus() {
+		return reportRepo.fetchPlanStatus();
+	}
+
+	@Override
+	public List<CitizenPlan> loadCitizenPlan(SearchRequest request) {
+		CitizenPlan citizenPlan = new CitizenPlan();
+		if(null != request.getPlanName() && "" != request.getPlanName()) {
+			citizenPlan.setPlanName(request.getPlanName());
+		}
+		if(null != request.getPlanStatus() && "" != request.getPlanStatus()) {
+			citizenPlan.setPlanStatus(request.getPlanStatus());
+		}
+		if(null != request.getGender() && "" != request.getGender()) {
+			citizenPlan.setGender(request.getGender());
+		}
+		if(null != request.getStartDate()) {
+			citizenPlan.setStartDate(request.getStartDate());
+		}
+		if(null != request.getEndDate()) {
+			citizenPlan.setEndDate(request.getEndDate());
+		}
+			
+		return reportRepo.findAll(Example.of(citizenPlan));
+		
+	}
+
+
+	@Override
+	public Boolean exportExcel() {
+		return null;
+	}
+
+	@Override
+	public Boolean exportPdf() {
+		return null;
+	}
+
+	@Override
+	public Boolean downloadExcel(HttpServletResponse response) {
+      Boolean isDownloaded = Boolean.FALSE;
+		
+      try {
+    	   Workbook workbook = new HSSFWorkbook();
+    	      Sheet sheet = workbook.createSheet("citizen-plan");
+    	      Row row = sheet.createRow(0);
+    	      
+    	      
+    	      row.createCell(0).setCellValue("ID");
+    	      row.createCell(1).setCellValue("NAME");
+    	      row.createCell(2).setCellValue("GENDER");
+    	      row.createCell(3).setCellValue("PLAN_NAME");
+    	      row.createCell(4).setCellValue("PLAN_STATUS");
+    	      row.createCell(5).setCellValue("BENEFIT_AMOUNT");
+    	      row.createCell(6).setCellValue("START_DATE");
+    	      row.createCell(7).setCellValue("END_DATE");
+    	      row.createCell(8).setCellValue("DENIAL_REASON");
+    	      
+    	      
+    	      List<CitizenPlan> citizens = reportRepo.findAll();
+
+    	      AtomicInteger rowIndex = new AtomicInteger(1);
+    	      if(null != citizens && !citizens.isEmpty()) {
+    	    	  citizens.forEach( citizen -> {
+    	    		  Row row2 = sheet.createRow(rowIndex.getAndIncrement());
+    	    		  row2.createCell(0).setCellValue(citizen.getCitizenId());
+    	    		  row2.createCell(1).setCellValue(citizen.getCitizenName());
+    	    		  row2.createCell(2).setCellValue(citizen.getGender());
+    	    		  row2.createCell(3).setCellValue(citizen.getPlanName());
+    	    		  row2.createCell(4).setCellValue(citizen.getPlanStatus());
+    	    		  if(null != citizen.getBenefitAmount()) {
+        	    		  row2.createCell(5).setCellValue(citizen.getBenefitAmount());
+    	    		  }else {
+        	    		  row2.createCell(5).setCellValue("NA");
+    	    		  }
+    	    		  
+    	    		  if(null != citizen.getStartDate()) {
+    	    			  row2.createCell(6).setCellValue(citizen.getStartDate().toString());
+    	    		  }else {
+    	    			  row2.createCell(6).setCellValue("NA");
+
+    	    		  }
+    	    		  if(null != citizen.getEndDate()) {
+        	    		  row2.createCell(7).setCellValue(citizen.getEndDate().toString());
+    	    		  }else {
+        	    		  row2.createCell(7).setCellValue("NA");
+    	    		  }
+    	    		  if(null != citizen.getDeniedReason()) {
+        	    		  row2.createCell(8).setCellValue(citizen.getDeniedReason());
+    	    		  }else {
+        	    		  row2.createCell(8).setCellValue("NA");
+ 
+    	    		  }
+    	    	  });
+    	      }
+    	      
+    	      ServletOutputStream outputStream = response.getOutputStream();
+    	      workbook.write(outputStream);
+    	      workbook.close();
+    	      isDownloaded = Boolean.TRUE;
+      }catch(Exception e) {
+    	  e.printStackTrace();
+      }
+   
+		return isDownloaded;
+	}
+
+	@Override
+	public void downloadPdf(HttpServletResponse response) {
+		Boolean isDownloaded = Boolean.FALSE;
+		try {
+			Document document = new Document(PageSize.A4); 
+			PdfWriter.getInstance(document, response.getOutputStream());  
+			document.open();
+			
+			Paragraph paragraph= new Paragraph("Citizen Plan");
+			document.add(paragraph);	
+			
+			PdfPTable table = new PdfPTable(8);
+			table.addCell("ID");
+			table.addCell("Name");
+			table.addCell("GENDER");
+			table.addCell("PLAN_NAME");
+			table.addCell("PLAN_STATUS");
+			table.addCell("BENEFIT_AMOUNT");
+			table.addCell("PLAN_START_DATE");
+			table.addCell("PLAN_END_DATE");
+			table.addCell("PLAN_DENIED_REASON");
+			
+			
+			List<CitizenPlan> citizens = reportRepo.findAll();
+			if(null != citizens && !citizens.isEmpty()) {
+				citizens.forEach( obj -> {
+					table.addCell(obj.getCitizenId().toString());
+					table.addCell(obj.getCitizenName());
+					table.addCell(obj.getGender());
+					table.addCell(obj.getPlanName());
+					table.addCell(obj.getPlanStatus());
+					table.addCell(obj.getBenefitAmount().toString());
+					table.addCell(obj.getStartDate().toString());
+					table.addCell(obj.getEndDate().toString());
+					table.addCell(obj.getDeniedReason());
+					
+				});
+			}
+			
+			document.add(table);
+			document.close();
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+}

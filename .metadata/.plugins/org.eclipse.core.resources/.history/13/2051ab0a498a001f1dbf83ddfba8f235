@@ -1,0 +1,24 @@
+package shiv.com.util;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.javamail.JavaMailSender;
+
+public class EmailUtility {
+	
+	@Autowired
+	private JavaMailSender mailSender;
+	
+	public Boolean sendEmail(String subject, String body, String toAddress) {
+		Boolean isMailSend = Boolean.FALSE;
+		try {
+			
+			
+			isMailSend = Boolean.TRUE;
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+		
+		return 
+	}
+
+}
